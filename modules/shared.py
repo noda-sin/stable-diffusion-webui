@@ -26,6 +26,7 @@ default_sd_model_file = sd_model_file
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--data-dir", type=str, default=os.path.dirname(os.path.dirname(os.path.realpath(__file__))), help="base path where all user data is stored",)
+parser.add_argument("--outputs-dir", type=str, default=os.path.join(data_path, 'outputs'), help="base path where system outputs",)
 parser.add_argument("--config", type=str, default=sd_default_config, help="path to config which constructs model",)
 parser.add_argument("--ckpt", type=str, default=sd_model_file, help="path to checkpoint of stable diffusion model; if specified, this checkpoint will be added to the list of checkpoints and loaded",)
 parser.add_argument("--ckpt-dir", type=str, default=None, help="Path to directory with stable diffusion checkpoints")
@@ -109,7 +110,8 @@ parser.add_argument("--gradio-queue", action='store_true', help="Uses gradio que
 parser.add_argument("--skip-version-check", action='store_true', help="Do not check versions of torch and xformers")
 parser.add_argument("--no-hashing", action='store_true', help="disable sha256 hashing of checkpoints to help loading performance", default=False)
 parser.add_argument("--no-download-sd-model", action='store_true', help="don't download SD1.5 model even if no model is found in --ckpt-dir", default=False)
-
+parser.add_argument("--slack-token", required=False)
+parser.add_argument("--slack-channel", required=False)
 
 script_loading.preload_extensions(extensions.extensions_dir, parser)
 script_loading.preload_extensions(extensions.extensions_builtin_dir, parser)
@@ -343,12 +345,12 @@ options_templates.update(options_section(('saving-images', "Saving images/grids"
 
 options_templates.update(options_section(('saving-paths', "Paths for saving"), {
     "outdir_samples": OptionInfo("", "Output directory for images; if empty, defaults to three directories below", component_args=hide_dirs),
-    "outdir_txt2img_samples": OptionInfo("outputs/txt2img-images", 'Output directory for txt2img images', component_args=hide_dirs),
-    "outdir_img2img_samples": OptionInfo("outputs/img2img-images", 'Output directory for img2img images', component_args=hide_dirs),
-    "outdir_extras_samples": OptionInfo("outputs/extras-images", 'Output directory for images from extras tab', component_args=hide_dirs),
+    "outdir_txt2img_samples": OptionInfo(os.path.join(cmd_opts.outputs_dir, "txt2img-images"), 'Output directory for txt2img images', component_args=hide_dirs),
+    "outdir_img2img_samples": OptionInfo(os.path.join(cmd_opts.outputs_dir, "img2img-images"), 'Output directory for img2img images', component_args=hide_dirs),
+    "outdir_extras_samples": OptionInfo(os.path.join(cmd_opts.outputs_dir, "extras-images"), 'Output directory for images from extras tab', component_args=hide_dirs),
     "outdir_grids": OptionInfo("", "Output directory for grids; if empty, defaults to two directories below", component_args=hide_dirs),
-    "outdir_txt2img_grids": OptionInfo("outputs/txt2img-grids", 'Output directory for txt2img grids', component_args=hide_dirs),
-    "outdir_img2img_grids": OptionInfo("outputs/img2img-grids", 'Output directory for img2img grids', component_args=hide_dirs),
+    "outdir_txt2img_grids": OptionInfo(os.path.join(cmd_opts.outputs_dir, "txt2img-grids"), 'Output directory for txt2img grids', component_args=hide_dirs),
+    "outdir_img2img_grids": OptionInfo(os.path.join(cmd_opts.outputs_dir, "img2img-grids"), 'Output directory for img2img grids', component_args=hide_dirs),
     "outdir_save": OptionInfo("log/images", "Directory for saving images using the Save button", component_args=hide_dirs),
 }))
 

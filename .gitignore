@@ -11,7 +11,7 @@ __pycache__
 /models/**/*
 /GFPGANv1.3.pth
 /gfpgan/weights/*.pth
-/ui-config.json
+#/ui-config.json
 /outputs
 /config.json
 /log
