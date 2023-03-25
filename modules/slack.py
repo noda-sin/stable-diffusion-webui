@@ -14,4 +14,7 @@ def send_img(img: PIL.Image):
     client = WebClient(token=token)
     img_bytes = io.BytesIO()
     img.save(img_bytes, format='PNG')
-    client.files_upload(channels=[channel], filename=f"{uuid.uuid4()}.png", file=img_bytes.getvalue())
+    try:
+        client.files_upload(channels=[channel], filename=f"{uuid.uuid4()}.png", file=img_bytes.getvalue())
+    except Exception as e:
+        print(f"Fail to send image: {e}")

@@ -26,7 +26,7 @@ default_sd_model_file = sd_model_file
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--data-dir", type=str, default=os.path.dirname(os.path.dirname(os.path.realpath(__file__))), help="base path where all user data is stored",)
-parser.add_argument("--lora-dir", type=str, default=data_path, help="base path of lora dir",)
+parser.add_argument("--lora-dir", type=str, default=os.path.join(data_path, 'models/Lora'), help="base path of lora dir",)
 parser.add_argument("--outputs-dir", type=str, default=os.path.join(data_path, 'outputs'), help="base path where system outputs",)
 parser.add_argument("--extensions-dir", type=str, default=data_path, help="base path of extensions",)
 parser.add_argument("--config", type=str, default=sd_default_config, help="path to config which constructs model",)
@@ -115,7 +115,7 @@ parser.add_argument("--no-download-sd-model", action='store_true', help="don't d
 parser.add_argument("--slack-token", required=False)
 parser.add_argument("--slack-channel", required=False)
 
-cmd_opts = parser.parse_args()
+cmd_opts, _ = parser.parse_known_args()
 
 extensions_dir = os.path.join(cmd_opts.extensions_dir, "extensions")
 extensions_builtin_dir = os.path.join(cmd_opts.extensions_dir, "extensions-builtin")
