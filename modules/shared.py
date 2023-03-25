@@ -123,6 +123,9 @@ extensions_builtin_dir = os.path.join(cmd_opts.extensions_dir, "extensions-built
 if not os.path.exists(extensions_dir):
     os.makedirs(extensions_dir)
 
+print(f"extensions_dir: {extensions_dir}")
+print(f"extensions_builtin_dir: {extensions_builtin_dir}")
+
 script_loading.preload_extensions(extensions_dir, parser)
 script_loading.preload_extensions(extensions_builtin_dir, parser)
 

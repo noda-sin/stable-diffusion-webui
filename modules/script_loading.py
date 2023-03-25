@@ -18,6 +18,7 @@ def preload_extensions(extensions_dir, parser):
         return
 
     for dirname in sorted(os.listdir(extensions_dir)):
+        print(f"Load moduels: {dirname}")
         preload_script = os.path.join(extensions_dir, dirname, "preload.py")
         if not os.path.isfile(preload_script):
             continue
