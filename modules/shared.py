@@ -26,9 +26,9 @@ default_sd_model_file = sd_model_file
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--data-dir", type=str, default=os.path.dirname(os.path.dirname(os.path.realpath(__file__))), help="base path where all user data is stored",)
+parser.add_argument("--lora-dir", type=str, default=data_path, help="base path of lora dir",)
 parser.add_argument("--outputs-dir", type=str, default=os.path.join(data_path, 'outputs'), help="base path where system outputs",)
 parser.add_argument("--extensions-dir", type=str, default=data_path, help="base path of extensions",)
-parser.add_argument("--lora-dir", type=str, default=data_path, help="base path of lora dir",)
 parser.add_argument("--config", type=str, default=sd_default_config, help="path to config which constructs model",)
 parser.add_argument("--ckpt", type=str, default=sd_model_file, help="path to checkpoint of stable diffusion model; if specified, this checkpoint will be added to the list of checkpoints and loaded",)
 parser.add_argument("--ckpt-dir", type=str, default=None, help="Path to directory with stable diffusion checkpoints")
@@ -115,10 +115,16 @@ parser.add_argument("--no-download-sd-model", action='store_true', help="don't d
 parser.add_argument("--slack-token", required=False)
 parser.add_argument("--slack-channel", required=False)
 
-script_loading.preload_extensions(extensions.extensions_dir, parser)
-script_loading.preload_extensions(extensions.extensions_builtin_dir, parser)
-
 cmd_opts = parser.parse_args()
+
+extensions_dir = os.path.join(cmd_opts.extensions_dir, "extensions")
+extensions_builtin_dir = os.path.join(cmd_opts.extensions_dir, "extensions-builtin")
+
+if not os.path.exists(extensions_dir):
+    os.makedirs(extensions_dir)
+
+script_loading.preload_extensions(extensions_dir, parser)
+script_loading.preload_extensions(extensions_builtin_dir, parser)
 
 restricted_opts = {
     "samples_filename_pattern",
