@@ -4,7 +4,8 @@ import argparse
 
 queue = []
 
-prompt = """
+messages = [
+    {"role": "user", "content": """
 I will write a beautiful girl in AI and post it on Twitter every day. Each time we will change different background, clothes, expression, hairstyle, hair color, camera angle, shot and pose.
 Shot is one of them (a close-up of face shot, an upper shot, a full body shot, shot from above, shot from below).
 Can you think of a subject and suggest one?
@@ -21,40 +22,65 @@ You may use fictional backgrounds and clothing from games, anime, etc.
 例8: Space station background, astronaut suit, serious gaze, short cut hair, silver hair, profile angle, an upper shot, operating spacecraft control panel
 
 Suggestions should be written after 'A:'.
-"""
-
-messages = [
-    {"role": "user", "content": prompt},
+"""},
 ]
 
-def ask_to_gpt(gpt_token):
+def generate_girl_params(token):
     if len(queue) > 0:
         return queue.pop()
 
-    openai.api_key = gpt_token
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=messages,
-    )
+    replay = request_to_gpt(token, messages)
 
     messages.append({
-        "role": "assistant", "content": response.choices[0].message.content,
+        "role": "assistant", "content": replay,
     });
     messages.append({
         "role": "user", "content": "Next",
     });
     
-    for line in response.choices[0].message.content.splitlines():
+    for line in replay.splitlines():
         if line.startswith('A:'):
             suggestion = line.replace('A:', '').strip()
             if len(suggestion) > 0:
                 queue.append(suggestion)
     return queue.pop()
 
+
+def generate_quote(token, txt):
+    replay = request_to_gpt(token, [
+        {
+            "role": "user", "content": f"""
+以下の状況における美少女が言いそうなセリフを日本語で１つ考えてください（日本語）。
+
+{txt}
+
+提案は、A: の後に続けてください。
+"""
+        }]
+    )
+    for line in replay.splitlines():
+            if line.startswith('A:'):
+                suggestion = line.replace('A:', '').replace('「', '').replace('」', '').strip()
+                if len(suggestion) > 0:
+                    return suggestion
+    return None
+
+
+def request_to_gpt(token, messages):
+    openai.api_key = token
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=messages,
+    )
+    return response.choices[0].message.content
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("--gpt-token", type=str, help="Token for chat gpt", required=True)
+    parser.add_argument("--token", type=str, help="Token for chat gpt", required=True)
     args = parser.parse_args()
     while True:
-        print(ask_to_gpt(args.gpt_token))
+        params = generate_girl_params(args.token)
+        quote = generate_quote(args.token, params)
+        print(f"{params}: {quote}")
         time.sleep(1)

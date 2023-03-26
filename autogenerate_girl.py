@@ -21,16 +21,17 @@ def wait_for_launch():
 
 def generate_girl_txt(gpt_token):
     print("start to generate txt by chatGPT")
-    txt = chat_gpt.ask_to_gpt(gpt_token)
+    txt = chat_gpt.generate_girl_params(gpt_token)
     while txt is None:
         time.sleep(10)
-        txt = chat_gpt.ask_to_gpt()
+        txt = chat_gpt.generate_girl_params(gpt_token)
     print(f"generated txt by chatGPT: {txt}")
     return txt
 
 def generate_girl(gpt_token):
     try:
         txt = generate_girl_txt(gpt_token)
+        quote = chat_gpt.generate_quote(gpt_token, txt)
         params = remote_config.config().copy()
         params["prompt"] = params["prompt"] + f"(({txt}))"
         print("Start to generate girl", params)
