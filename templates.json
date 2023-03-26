@@ -8,7 +8,7 @@
     "hr_second_pass_steps": 0,
     "hr_resize_x": 0,
     "hr_resize_y": 0,
-    "prompt": "best quality ,masterpiece, illustration, an extremely delicate and beautiful, extremely detailed ,CG ,unity ,8k wallpaper, Amazing, finely detail, masterpiece,best quality,official art,extremely detailed CG unity 8k wallpaper,absurdres, incredibly absurdres, huge filesize , ultra-detailed, extremely detailed, beautiful detailed girl, extremely detailed eyes and face, beautiful detailed eyes, (RAW photo, best quality), (realistic, photo-realistic:1.37), 1girl,cute, beautiful costume, beautiful background, beautiful composition, dramatic lighting, <lora:japaneseDollLikeness_v10:0.3>,",
+    "prompt": "best quality ,masterpiece, illustration, an extremely delicate and beautiful, extremely detailed ,CG ,unity ,8k wallpaper, Amazing, finely detail, masterpiece,best quality,official art,extremely detailed CG unity 8k wallpaper,absurdres, incredibly absurdres, huge filesize , ultra-detailed, extremely detailed, beautiful detailed girl, extremely detailed eyes and face, beautiful detailed eyes, (RAW photo, best quality), (realistic, photo-realistic:1.37), 1girl,cute, beautiful costume, beautiful background, beautiful composition, dramatic lighting,",
     "negative_prompt": "((nippless)), paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glan,nsfw, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, bad feet,extra fingers,fewer fingers,strange fingers,bad han,hands",
     "styles": [
     ],
