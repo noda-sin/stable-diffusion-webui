@@ -29,7 +29,7 @@ from ldm.models.diffusion.ddpm import LatentDepth2ImageDiffusion
 
 from einops import repeat, rearrange
 from blendmodes.blend import blendLayers, BlendType
-from modules.slack import send_img
+from modules.slack import send_img, send_txt
 
 # some of those options should not be changed at all because they would break the model, so I removed them from options.
 opt_C = 4
@@ -687,6 +687,8 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
                 send_img(image)
                 output_images.append(image)
+
+            send_txt(p.prompt)
 
             del x_samples_ddim
 
