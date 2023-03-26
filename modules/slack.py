@@ -13,7 +13,7 @@ def send_txt(text: str):
 
     client = WebClient(token=token)
     try:
-        client.chat_postMessage(channels=[channel], text=text)
+        client.chat_postMessage(channel=channel, text=text)
     except Exception as e:
         print(f"Fail to send text: {e}")
 
