@@ -31,3 +31,4 @@ fastapi==0.90.1
 slack-sdk==3.20.1
 openai==0.27.2
 nudepy==0.5.1
+NudeNetClassifier @ git+https://github.com/platelminto/NudeNet@05ad8a29b4a2474e6cc4f7f76c76e77e01b08744
