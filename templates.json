@@ -23,7 +23,7 @@
     "steps": 30,
     "cfg_scale": 7,
     "width": 512,
-    "height": 512,
+    "height": 768,
     "restore_faces": false,
     "tiling": false,
     "eta": 0,
