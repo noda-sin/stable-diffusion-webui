@@ -28,7 +28,7 @@ def generate_girl_txt(gpt_token):
     print(f"generated txt by chatGPT: {txt}")
     return txt
 
-def generate_girl(gpt_token, batch):
+def generate_girl(gpt_token):
     try:
         txt = generate_girl_txt(gpt_token)
         params = remote_config.config().copy()
@@ -45,7 +45,6 @@ def generate_girl(gpt_token, batch):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("--batch", type=int, help="Batch size", default=1)
     parser.add_argument("--gpt-token", type=str, help="Token for chat gpt", required=True)
     args, _ = parser.parse_known_args(sys.argv)
     proc = subprocess.Popen(" ".join(["./webui.sh",  "--api"] + ([f"'{arg}'" for arg in sys.argv[1:]])), shell=True)
@@ -54,7 +53,7 @@ if __name__ == "__main__":
 
         print("stable diffusion webui launched")
         while True:
-            generate_girl(args.gpt_token, args.batch)
+            generate_girl(args.gpt_token)
             time.sleep(10)
     finally:
         proc.kill()
