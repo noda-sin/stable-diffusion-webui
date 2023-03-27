@@ -51,6 +51,7 @@ def generate_girl(chat_gpt: ChatGTP, slack: Slack):
         quote = chat_gpt.get_quote(txt)
         params = remote_config.config().copy()
         params["prompt"] = params["prompt"] + f"{lora()}(({txt}))"
+        params["seed"] = random.randint(1, 1999999999)
         print("Start to generate girl", params)
         resp = requests.post(url="http://127.0.0.1:7860/sdapi/v1/txt2img", json=params)
 
