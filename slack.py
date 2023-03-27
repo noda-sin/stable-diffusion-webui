@@ -31,6 +31,8 @@ def parse_job_from_message(message):
     seed = None
 
     for line in message.splitlines():
+        if len(line.split('/')) != 2:
+            continue
         key, value = line.split('/')
         if key.strip() == 'prompt':
             prompt = value
@@ -38,7 +40,8 @@ def parse_job_from_message(message):
             seed = int(value)
     return {
         'prompt': prompt,
-        'seed': seed
+        'seed': seed,
+        'enable_hr': False,
     }
 
 
@@ -86,11 +89,10 @@ def handle_reaction(body, say):
         enqueue(job, thread_ts)
         say("Enque :plus: request", thread_ts=thread_ts)
     elif reaction == 'bai':
-        # job = parse_job_from_message(message)
-        # job['seed'] = random.randint(1, 1999999999)
-        # enqueue(job, thread_ts)
-        # say("Enque :bai: request", thread_ts=thread_ts)
-        pass
+        job = parse_job_from_message(message)
+        job['enable_hr'] = True
+        enqueue(job, thread_ts)
+        say("Enque :bai: request", thread_ts=thread_ts)
 
 
 class Slack(object):

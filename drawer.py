@@ -41,8 +41,9 @@ class Drawer(object):
     def _draw_from_job(self, job):
         # 1. Create peramters
         params = remote_config.config().copy()
-        params["prompt"] = job['params']['prompt']
-        params["seed"] = job['params']['seed']
+        params["prompt"] = job['prompt']
+        params["seed"] = job['seed']
+        params["enable_hr"] = job['enable_hr']
 
         # 2. Draw
         logger.info(f"Draw from job: {job}")
