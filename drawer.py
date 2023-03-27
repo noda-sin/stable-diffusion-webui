@@ -60,6 +60,11 @@ class Drawer(object):
         for image in images:
             self.slack.send_image(image, thread_ts=job['thread_ts'])
 
+        self.slack.send_message(f"""
+prompt / {params['prompt']}
+seed / {json['parameters']['seed']}
+""", thread_ts=job['thread_ts'])
+
 
     def _draw_new(self):
         # 1. Create peramters
