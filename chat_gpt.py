@@ -1,6 +1,7 @@
 import openai
 import time
 import argparse
+import os
 
 DEFAULT_HISTORIES = [
     {"role": "user", "content": """
@@ -27,13 +28,12 @@ class ChatGTP(object):
     params_queue = []
     histories = []
 
-    def __init__(self, token):
-        self.token = token
+    def __init__(self):
+        openai.api_key = os.environ.get('GPT_TOKEN')
         self.histories = DEFAULT_HISTORIES.copy()
 
 
     def __request(self, messages):
-        openai.api_key = self.token
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=messages,

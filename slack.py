@@ -7,7 +7,6 @@ import io
 import uuid
 import traceback
 
-
 app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
 
 
@@ -26,11 +25,14 @@ class Slack(object):
             print(traceback.format_exc())
 
 
-    def send_image(self, img: Image, thread_ts=None):
+    def send_image(self, img: Image, text=None, thread_ts=None):
         img_bytes = io.BytesIO()
         img.save(img_bytes, format='PNG')
         try:
-            self.client.files_upload(channels=[self.channel], thread_ts=thread_ts, filename=f"{uuid.uuid4()}.png", file=img_bytes.getvalue())
+            resp = self.client.files_upload(channels=[self.channel], thread_ts=thread_ts, filename=f"{uuid.uuid4()}.png", file=img_bytes.getvalue(),
+                                            initial_comment=text)
+            for channel in resp["file"]["shares"]["public"].values():
+                return channel[0]['ts']
         except Exception as e:
             print(f"Fail to send image: {e}")
             print(traceback.format_exc())
