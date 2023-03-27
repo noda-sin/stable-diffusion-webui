@@ -63,6 +63,7 @@ def generate_girl(chat_gpt: ChatGTP, slack: Slack):
 prompt: {params['prompt']}
 seed: {json['parameters']['seed']}
 """, thread_ts)
+            print(json['parameters'])
             for image in json['images']:
                 im = Image.open(BytesIO(base64.b64decode(image)))
                 slack.send_image(im, thread_ts)
