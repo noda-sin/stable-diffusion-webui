@@ -63,7 +63,7 @@ def handle_message(body, say):
     job = parse_job_from_message(message)
     if job:
         enqueue(job, thread_ts)
-        say("Enque draw request", thread_ts=thread_ts)
+        say("Enqeue draw request", thread_ts=thread_ts)
 
 
 @app.event("reaction_added")
@@ -85,16 +85,22 @@ def handle_reaction(body, say):
         job['seed'] = random.randint(1, 1999999999)
         enqueue(job, thread_ts)
         say("Enque :gacha: request", thread_ts=thread_ts)
+    if reaction == '10_gacha':
+        for _ in range(10):
+            job = parse_job_from_message(message_text)
+            job['seed'] = random.randint(1, 1999999999)
+            enqueue(job, thread_ts)
+        say("Enqeue :10_gacha: request", thread_ts=thread_ts)
     elif reaction == 'plus':
         job = parse_job_from_message(message_text)
         job['seed'] = job['seed'] + 1
         enqueue(job, thread_ts)
-        say("Enque :plus: request", thread_ts=thread_ts)
+        say("Enqeue :plus: request", thread_ts=thread_ts)
     elif reaction == 'bai':
         job = parse_job_from_message(message_text)
         job['enable_hr'] = True
         enqueue(job, thread_ts)
-        say("Enque :bai: request", thread_ts=thread_ts)
+        say("Enqeue :bai: request", thread_ts=thread_ts)
 
 
 class Slack(object):
