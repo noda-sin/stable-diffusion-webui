@@ -12,6 +12,7 @@ import io
 from PIL import Image
 from io import BytesIO
 import base64
+import traceback
 
 def is_launched():
     try:
@@ -85,7 +86,8 @@ def generate_girl(gpt_token, slack_token, slack_channel):
         else:
             print(f"Fail to generate girl: {resp.text}")
     except Exception as e:
-        print(f"Fail to generate girl", e)
+        print(f"Fail to generate girl:", e)
+        print(traceback.format_exc())
 
 
 if __name__ == "__main__":
