@@ -2,9 +2,7 @@ import openai
 import time
 import argparse
 
-queue = []
-
-messages_queue = [
+DEFAULT_HISTORIES = [
     {"role": "user", "content": """
 I will write a beautiful girl in AI and post it on Twitter every day. Each time we will change different background, clothes, expression, hairstyle, hair color, camera angle, shot and pose.
 Shot is one of them (a close-up of face shot, an upper shot, a full body shot, shot from above, shot from below).
@@ -25,65 +23,75 @@ Suggestions should be written after 'A:'.
 """},
 ]
 
-def generate_girl_params(token):
-    if len(queue) > 0:
-        return queue.pop()
+class ChatGTP(object):
+    params_queue = []
+    histories = []
 
-    replay = request_to_gpt(token, messages_queue)
-
-    if (len(messages_queue) > 10):
-        messages_queue = [messages_queue[0]]
-
-    messages_queue.append({
-        "role": "assistant", "content": replay,
-    });
-    messages_queue.append({
-        "role": "user", "content": "Next",
-    });
-    
-    for line in replay.splitlines():
-        if line.startswith('A:'):
-            suggestion = line.replace('A:', '').strip()
-            if len(suggestion) > 0:
-                queue.append(suggestion)
-    return queue.pop()
+    def __init__(self, token):
+        self.token = token
+        self.histories = DEFAULT_HISTORIES.copy()
 
 
-def generate_quote(token, txt):
-    replay = request_to_gpt(token, [
-        {
-            "role": "user", "content": f"""
+    def __request(self, messages):
+        openai.api_key = self.token
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=messages,
+        )
+        return response.choices[0].message.content
+
+
+    def get_params(self):
+        if len(self.params_queue) > 0:
+            return self.params_queue.pop()
+
+        reply = self.__request(self.histories)
+
+        if (len(self.histories) > 10):
+            self.histories = DEFAULT_HISTORIES.copy()
+        
+        self.histories.append({
+            "role": "assistant", "content": reply,
+        });
+        self.histories.append({
+            "role": "user", "content": "Next",
+        });
+
+        for line in reply.splitlines():
+            if line.startswith('A:'):
+                suggestion = line.replace('A:', '').strip()
+                if len(suggestion) > 0:
+                    self.params_queue.append(suggestion)
+        return self.params_queue.pop()
+
+
+    def get_quote(self, params):
+        reply = self.__request([
+            {
+                "role": "user", "content": f"""
 以下の状況における美少女が言いそうなセリフを日本語で１つ考えてください（日本語）。
 
-{txt}
+{params}
 
 提案は、A: の後に続けてください。
 """
-        }]
-    )
-    for line in replay.splitlines():
-            if line.startswith('A:'):
-                suggestion = line.replace('A:', '').replace('「', '').replace('」', '').strip()
-                if len(suggestion) > 0:
-                    return suggestion
-    return None
-
-
-def request_to_gpt(token, messages):
-    openai.api_key = token
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=messages,
-    )
-    return response.choices[0].message.content
+            }
+        ])
+        for line in reply.splitlines():
+                if line.startswith('A:'):
+                    suggestion = line.replace('A:', '').replace('「', '').replace('」', '').strip()
+                    if len(suggestion) > 0:
+                        return suggestion
+        return None
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--token", type=str, help="Token for chat gpt", required=True)
     args = parser.parse_args()
+    chat_gpt = ChatGTP(args.token)
     while True:
-        params = generate_girl_params(args.token)
-        quote = generate_quote(args.token, params)
+        params = chat_gpt.get_params()
+        quote = chat_gpt.get_quote(params)
         print(f"{params}: {quote}")
         time.sleep(1)

@@ -1,7 +1,7 @@
 import subprocess
 import time
 import requests
-import chat_gpt
+from chat_gpt import ChatGTP
 import remote_config
 import sys
 import argparse
@@ -68,10 +68,10 @@ def send_img(token, channel, img: Image, thread_ts):
         print(f"Fail to send image: {e}")
 
 
-def generate_girl(gpt_token, slack_token, slack_channel):
+def generate_girl(chat_gpt: ChatGTP, slack_token, slack_channel):
     try:
-        txt = generate_girl_txt(gpt_token)
-        quote = chat_gpt.generate_quote(gpt_token, txt)
+        txt = chat_gpt.get_params()
+        quote = chat_gpt.get_quote(txt)
         params = remote_config.config().copy()
         params["prompt"] = params["prompt"] + f"{lora()}(({txt}))"
         print("Start to generate girl", params)
@@ -102,8 +102,10 @@ if __name__ == "__main__":
         wait_for_launch()
 
         print("stable diffusion webui launched")
+
+        chat_gpt = ChatGTP(args.gpt_token)
         while True:
-            generate_girl(args.gpt_token, args.slack_token, args.slack_channel)
+            generate_girl(chat_gpt, args.slack_token, args.slack_channel)
             time.sleep(10)
     finally:
         proc.kill()
