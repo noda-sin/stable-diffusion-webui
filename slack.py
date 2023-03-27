@@ -15,11 +15,11 @@ app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
 queue = DrawQueue()
 
 
-def get_message(channel, thread_ts):
-    res = app.client.conversations_replies(channel=channel, ts=thread_ts)
+def get_message(channel, ts):
+    res = app.client.conversations_replies(channel=channel, ts=ts)
     for message in res['messages']:
-        if message['ts'] == thread_ts:
-            return message['text']
+        if message['ts'] == ts:
+            return message
     return None
 
 
@@ -75,21 +75,23 @@ def handle_reaction(body, say):
     
     reaction = event['reaction']
     channel = event['item']['channel']
-    thread_ts = event['item']['ts']
-    message = get_message(channel, thread_ts)
+    ts = event['item']['ts']
+    message = get_message(channel, ts)
+    message_text = message['text']
+    thread_ts = message['thread_ts']
 
     if reaction == 'gacha':
-        job = parse_job_from_message(message)
+        job = parse_job_from_message(message_text)
         job['seed'] = random.randint(1, 1999999999)
         enqueue(job, thread_ts)
         say("Enque :gacha: request", thread_ts=thread_ts)
     elif reaction == 'plus':
-        job = parse_job_from_message(message)
+        job = parse_job_from_message(message_text)
         job['seed'] = job['seed'] + 1
         enqueue(job, thread_ts)
         say("Enque :plus: request", thread_ts=thread_ts)
     elif reaction == 'bai':
-        job = parse_job_from_message(message)
+        job = parse_job_from_message(message_text)
         job['enable_hr'] = True
         enqueue(job, thread_ts)
         say("Enque :bai: request", thread_ts=thread_ts)
