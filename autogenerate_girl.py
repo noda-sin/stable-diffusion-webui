@@ -5,8 +5,13 @@ import chat_gpt
 import remote_config
 import sys
 import argparse
-import copy
+from slack_sdk import WebClient
+import uuid
 import random
+import io
+from PIL import Image
+from io import BytesIO
+import base64
 
 def is_launched():
     try:
@@ -39,7 +44,30 @@ def lora():
     tj = tj / sum * 0.3
     return f"<lora:japaneseDollLikeness_v10:{jp}>,<lora:koreanDollLikeness_v15:{kr}>,<lora:taiwanDollLikeness_v10:{tj}>,"
 
-def generate_girl(gpt_token):
+
+def send_txt(token, channel, text: str, thread_ts=None):
+    client = WebClient(token=token)
+    try:
+        resp = client.chat_postMessage(channel=channel, text=text, thread_ts=thread_ts)
+        return resp["ts"]
+    except Exception as e:
+        print(f"Fail to send text: {e}")
+
+
+def send_img(token, channel, img: Image, thread_ts):
+    if not token:
+        return
+
+    client = WebClient(token=token)
+    img_bytes = io.BytesIO()
+    img.save(img_bytes, format='PNG')
+    try:
+        client.files_upload(channels=[channel], thread_ts=thread_ts, filename=f"{uuid.uuid4()}.png", file=img_bytes.getvalue())
+    except Exception as e:
+        print(f"Fail to send image: {e}")
+
+
+def generate_girl(gpt_token, slack_token, slack_channel):
     try:
         txt = generate_girl_txt(gpt_token)
         quote = chat_gpt.generate_quote(gpt_token, txt)
@@ -49,6 +77,11 @@ def generate_girl(gpt_token):
         resp = requests.post(url="http://127.0.0.1:7860/sdapi/v1/txt2img", json=params)
         if resp.status_code == 200:
             print(f"Success to generate girl: {txt}")
+            thread_ts = send_txt(slack_token, slack_channel, quote)
+            send_txt(slack_token, slack_channel, f"{params['prompt']}/{params['seed']}", thread_ts)
+            for image in resp.json()['images']:
+                im = Image.open(BytesIO(base64.b64decode(image)))
+                send_img(slack_token, slack_channel, im, thread_ts)
         else:
             print(f"Fail to generate girl: {resp.text}")
     except Exception as e:
@@ -58,6 +91,9 @@ def generate_girl(gpt_token):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--gpt-token", type=str, help="Token for chat gpt", required=True)
+    parser.add_argument("--slack-token", required=False)
+    parser.add_argument("--slack-channel", required=False)
+
     args, _ = parser.parse_known_args(sys.argv)
     proc = subprocess.Popen(" ".join(["./webui.sh",  "--api"] + ([f"'{arg}'" for arg in sys.argv[1:]])), shell=True)
     try:
@@ -65,7 +101,7 @@ if __name__ == "__main__":
 
         print("stable diffusion webui launched")
         while True:
-            generate_girl(args.gpt_token)
+            generate_girl(args.gpt_token, args.slack_token, args.slack_channel)
             time.sleep(10)
     finally:
         proc.kill()

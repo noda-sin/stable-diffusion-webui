@@ -4,7 +4,7 @@ import argparse
 
 queue = []
 
-messages = [
+defualt_messages = [
     {"role": "user", "content": """
 I will write a beautiful girl in AI and post it on Twitter every day. Each time we will change different background, clothes, expression, hairstyle, hair color, camera angle, shot and pose.
 Shot is one of them (a close-up of face shot, an upper shot, a full body shot, shot from above, shot from below).
@@ -25,18 +25,23 @@ Suggestions should be written after 'A:'.
 """},
 ]
 
+messages = defualt_messages.copy()
+
 def generate_girl_params(token):
     if len(queue) > 0:
         return queue.pop()
 
     replay = request_to_gpt(token, messages)
 
-    messages.append({
-        "role": "assistant", "content": replay,
-    });
-    messages.append({
-        "role": "user", "content": "Next",
-    });
+    if len(messages) > 10:
+        messages = defualt_messages.copy()
+    else:
+        messages.append({
+            "role": "assistant", "content": replay,
+        });
+        messages.append({
+            "role": "user", "content": "Next",
+        });
     
     for line in replay.splitlines():
         if line.startswith('A:'):

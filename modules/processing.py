@@ -685,10 +685,10 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 if opts.enable_pnginfo:
                     image.info["parameters"] = text
 
-                send_img(image)
+                # send_img(image)
                 output_images.append(image)
 
-            send_txt(p.prompt)
+            # send_txt(p.prompt)
 
             del x_samples_ddim
 
