@@ -167,8 +167,10 @@ def create_api(app):
     api = Api(app, queue_lock)
     return api
 
-
 def wait_on_server(demo=None):
+    import drawer
+    drawer.Drawer().start()
+
     while 1:
         time.sleep(0.5)
         if shared.state.need_restart:
