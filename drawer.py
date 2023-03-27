@@ -10,6 +10,7 @@ import threading
 
 from chat_gpt import ChatGTP
 from slack import Slack
+from draw_queue import DrawQueue
 from logger import logger
 
 def rand_lora():
@@ -27,9 +28,39 @@ class Drawer(object):
     def __init__(self):
         self.slack = Slack()
         self.chat_gpt = ChatGTP()
-
+        self.queue = DrawQueue()
 
     def _draw(self):
+        job = self.queue.pop()
+        if job:
+            self._draw_from_job(job)
+        else:
+            self._draw_new()
+
+
+    def _draw_from_job(self, job):
+        # 1. Create peramters
+        params = remote_config.config().copy()
+        params["prompt"] = job['params']['prompt']
+        params["seed"] = job['params']['seed']
+
+        # 2. Draw
+        logger.info(f"Draw from job: {job}")
+
+        resp = requests.post(url="http://127.0.0.1:7860/sdapi/v1/txt2img", json=params)
+        resp.raise_for_status()
+
+        json = resp.json()
+        images = [
+            Image.open(BytesIO(base64.b64decode(image))) for image in json['images']
+        ]
+
+        # 3. Send left images
+        for image in images:
+            self.slack.send_image(image, thread_ts=job['thread_ts'])
+
+
+    def _draw_new(self):
         # 1. Create peramters
         prompt = self.chat_gpt.get_params()
         quote = self.chat_gpt.get_quote(prompt)        
@@ -38,6 +69,8 @@ class Drawer(object):
         params["seed"] = random.randint(1, 1999999999)
 
         # 2. Draw
+        logger.info(f"Draw new: {prompt}")
+
         resp = requests.post(url="http://127.0.0.1:7860/sdapi/v1/txt2img", json=params)
         resp.raise_for_status()
 
@@ -51,8 +84,8 @@ class Drawer(object):
 
         # 2. Send parameters
         self.slack.send_message(f"""
-prompt: {params['prompt']}
-seed: {json['parameters']['seed']}
+prompt / {params['prompt']}
+seed / {json['parameters']['seed']}
 """, thread_ts=thread_ts)
 
         # 3. Send left images
