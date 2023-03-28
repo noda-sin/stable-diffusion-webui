@@ -10,9 +10,23 @@ import random
 
 from logger import logger
 from draw_queue import DrawQueue
+from chat_gpt import ChatGPT
 
 app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
 queue = DrawQueue()
+chat_gpt = ChatGPT()
+
+
+def get_prev_job(channel, ts):
+    res = app.client.conversations_replies(channel=channel, ts=ts)
+    messages = res['messages']
+    messages.reverse()
+    for message in messages:
+        text = message['text']
+        job = parse_job_from_message(text)
+        if job:
+            return job
+    return None
 
 
 def get_message(channel, ts):
@@ -24,28 +38,22 @@ def get_message(channel, ts):
 
 
 def parse_job_from_message(message):
+    if not message:
+        return None
+
     if not "prompt / " in message:
         return None
 
-    prompt = None
-    seed = None
-
+    params = {}
     for line in message.splitlines():
         if len(line.split('/')) != 2:
             continue
         key, value = line.split('/')
-        if key.strip() == 'prompt':
-            prompt = value
-        if key.strip() == 'seed':
-            seed = int(value)
-    return {
-        'prompt': prompt,
-        'seed': seed,
-        'enable_hr': False,
-    }
+        params[key.strip()] = value.strip()
+    return params
 
 
-def enqueue(job, thread_ts):
+def enqueue(job, thread_ts=None):
     job['thread_ts'] = thread_ts
     queue.push(job)
 
@@ -53,23 +61,36 @@ def enqueue(job, thread_ts):
 @app.event("message")
 def handle_message(body, say):
     event = body['event']
+    logger.info(f"Recieved message event: {event}")
 
     if event['user'] != 'U04TDUX13BK':
         return
 
-    thread_ts = event['event_ts']
+    channel = event['channel']
     message = event['text']
-
-    job = parse_job_from_message(message)
-    if job:
-        enqueue(job, thread_ts)
-        say("Enqeue draw request", thread_ts=thread_ts)
+    if 'thread_ts' in event:
+        thread_ts = event['thread_ts']
+        prev_job = get_prev_job(channel, thread_ts)
+        logger.info(f"prev job: {prev_job}")
+        if prev_job:
+            prev_prompt = prev_job['prompt']
+            next_prompt = chat_gpt.get_next_params(prev_prompt, message)
+            job = prev_job.copy()
+            job['prompt'] = next_prompt
+            enqueue(job, thread_ts)
+            say(f"Enqeue improve request / {next_prompt}", thread_ts=thread_ts)
+    else:
+        job = parse_job_from_message(message)
+        if job:
+            enqueue(job)
+            say("Enqeue draw request", thread_ts=event['event_ts'])
 
 
 @app.event("reaction_added")
 def handle_reaction(body, say):
     event = body['event']
-    
+    logger.info(f"Recieved reaction event: {event}")
+
     if event['user'] != 'U04TDUX13BK':
         return
     
